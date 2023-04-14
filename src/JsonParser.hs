@@ -3,5 +3,7 @@ module JsonParser (parseJSON) where
 import System.IO  
 import Control.Monad
 
-parseJSON :: IO ()
-parseJSON = putStrLn "parseJSON"
+parseJSON :: FilePath -> IO ()
+parseJSON file = do
+    content <- readFile file
+    putStrLn content
