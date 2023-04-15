@@ -32,7 +32,7 @@ instance Applicative Parser where
 
 instance Alternative Parser where
   empty :: Parser a
-  empty = Parser $ \_ -> Nothing
+  empty = Parser $ const Nothing
 
   (<|>) :: Parser a -> Parser a -> Parser a
   (<|>) (Parser p) (Parser q) = Parser $ \cs -> p cs <|> q cs
@@ -45,7 +45,7 @@ pChar x = Parser g
     g _ = Nothing
 
 pString :: String -> Parser String
-pString = sequenceA . map pChar
+pString = traverse pChar
 
 satisfy :: (Char -> Bool) -> Parser Char
 satisfy f = Parser p
