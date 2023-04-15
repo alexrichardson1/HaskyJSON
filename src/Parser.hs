@@ -47,6 +47,16 @@ pChar x = Parser g
 pString :: String -> Parser String
 pString = sequenceA . map pChar
 
+satisfy :: (Char -> Bool) -> Parser Char
+satisfy f = Parser p
+  where
+    p (c : cs)
+      | f c = Just (c, cs)
+    p _ = Nothing
+
+pDigit :: Parser Int
+pDigit = digitToInt <$> satisfy isDigit
+
 pNull :: Parser JValue
 pNull = JNull <$ pString "null"
 
