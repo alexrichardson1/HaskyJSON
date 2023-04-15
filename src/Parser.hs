@@ -1,5 +1,6 @@
 module Parser where
 
+import Data.Char (isDigit, digitToInt)
 import Control.Applicative
 
 newtype Parser a = Parser { runParser :: String -> Maybe (a, String)}
@@ -45,3 +46,12 @@ pChar x = Parser g
 
 pString :: String -> Parser String
 pString = sequenceA . map pChar
+
+pNull :: Parser JValue
+pNull = JNull <$ pString "null"
+
+pBool :: Parser JValue
+pBool = pTrue <|> pFalse
+  where
+    pTrue = JBool True <$ pString "true"
+    pFalse = JBool False <$ pString "false"
