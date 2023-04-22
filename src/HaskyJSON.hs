@@ -1,4 +1,4 @@
-module JsonParser (parseJSON) where
+module HaskyJSON (parseJSON) where
 
 import System.IO  
 import Control.Monad
