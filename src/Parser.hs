@@ -57,11 +57,11 @@ satisfy f = Parser p
 pDigit :: Parser Int
 pDigit = digitToInt <$> satisfy isDigit
 
-pNull :: Parser JValue
-pNull = JNull <$ pString "null"
+pJNull :: Parser JValue
+pJNull = JNull <$ pString "null"
 
-pBool :: Parser JValue
-pBool = pTrue <|> pFalse
+pJBool :: Parser JValue
+pJBool = pTrue <|> pFalse
   where
     pTrue = JBool True <$ pString "true"
     pFalse = JBool False <$ pString "false"
