@@ -14,23 +14,19 @@ data JValue = JNull
             deriving (Show, Eq)
 
 instance Functor Parser where
-  fmap :: (a -> b) -> Parser a -> Parser b
   fmap f (Parser p) = Parser $ \cs -> do
       (a, cs') <- p cs
       Just (f a, cs')
 
 instance Applicative Parser where
-  pure :: a -> Parser a
   pure a = Parser $ \cs -> Just (a, cs)
 
-  (<*>) :: Parser (a -> b) -> Parser a -> Parser b
   (<*>) (Parser p) (Parser q) = Parser $ \cs -> do
       (f, cs') <- p cs
       (a, cs'') <- q cs'
       Just (f a, cs'')
 
 instance Monad Parser where
-  (>>=) :: Parser a -> (a -> Parser b) -> Parser b
   (>>=) (Parser p) f = Parser $ \cs -> do
     (a, cs') <- p cs
     let (Parser q) = f a
@@ -38,10 +34,8 @@ instance Monad Parser where
     Just (b, cs'')
 
 instance Alternative Parser where
-  empty :: Parser a
   empty = Parser $ const Nothing
 
-  (<|>) :: Parser a -> Parser a -> Parser a
   (<|>) (Parser p) (Parser q) = Parser $ \cs -> p cs <|> q cs
 
 pChar :: Char -> Parser Char
