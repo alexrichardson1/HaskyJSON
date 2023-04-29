@@ -1,4 +1,4 @@
-module Parser where
+module Parser (runParser, pJObject) where
 
 import Data.Char (isDigit, digitToInt)
 import Control.Applicative
@@ -72,3 +72,25 @@ pJBool = pTrue <|> pFalse
   where
     pTrue = JBool True <$ pString "true"
     pFalse = JBool False <$ pString "false"
+
+pJNumber :: Parser JValue
+pJNumber = JNumber . read <$> some (satisfy isDigit)
+
+pQString :: Parser String
+pQString = pChar '"' *>  many (satisfy $ \x -> x /= '"') <* pChar '"'
+
+pJString :: Parser JValue
+pJString = JString <$> pQString
+
+pJValue :: Parser JValue
+pJValue = pJNull <|> pJBool <|> pJNumber <|> pJString
+
+jsonEntry :: Parser (String, JValue)
+jsonEntry = do
+  key   <- pQString
+  _     <- pChar ':'
+  value <- pJValue
+  return (key, value)
+
+pJObject :: Parser JValue
+pJObject = JObject <$> (pChar '{' *> many jsonEntry <* pChar '}')
