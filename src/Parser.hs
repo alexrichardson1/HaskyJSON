@@ -61,6 +61,9 @@ satisfy f = Parser p
       | f c = Just (c, cs)
     p _ = Nothing
 
+sepBy :: Parser a -> Parser b -> Parser [a]
+sepBy p sep = (:) <$> p <*> many (sep *> p)
+
 pDigit :: Parser Int
 pDigit = digitToInt <$> satisfy isDigit
 
@@ -82,8 +85,11 @@ pQString = pChar '"' *>  many (satisfy $ \x -> x /= '"') <* pChar '"'
 pJString :: Parser JValue
 pJString = JString <$> pQString
 
+pJLiteral :: Parser JValue
+pJLiteral = pJNull <|> pJBool <|> pJNumber <|> pJString
+
 pJValue :: Parser JValue
-pJValue = pJNull <|> pJBool <|> pJNumber <|> pJString
+pJValue = JArray <$> (pChar '[' *> pJLiteral `sepBy` pChar ',' <* pChar ']') <|> pJLiteral
 
 jsonEntry :: Parser (String, JValue)
 jsonEntry = do
