@@ -1,4 +1,4 @@
-module Parser (runParser, pJObject) where
+module Parser (runParser, jsonObject) where
 
 import Data.Char (isDigit, digitToInt)
 import Control.Applicative
@@ -38,15 +38,15 @@ instance Alternative Parser where
 
   (<|>) (Parser p) (Parser q) = Parser $ \cs -> p cs <|> q cs
 
-pChar :: Char -> Parser Char
-pChar x = Parser g
+char :: Char -> Parser Char
+char x = Parser g
   where
     g (c: cs)
       | c == x = Just (c, cs)
     g _ = Nothing
 
-pString :: String -> Parser String
-pString = traverse pChar
+string :: String -> Parser String
+string = traverse char
 
 satisfy :: (Char -> Bool) -> Parser Char
 satisfy f = Parser p
@@ -58,39 +58,36 @@ satisfy f = Parser p
 sepBy :: Parser a -> Parser b -> Parser [a]
 sepBy p sep = (:) <$> p <*> many (sep *> p)
 
-pDigit :: Parser Int
-pDigit = digitToInt <$> satisfy isDigit
+jsonNull :: Parser JValue
+jsonNull = JNull <$ string "null"
 
-pJNull :: Parser JValue
-pJNull = JNull <$ pString "null"
-
-pJBool :: Parser JValue
-pJBool = pTrue <|> pFalse
+jsonBool :: Parser JValue
+jsonBool = pTrue <|> pFalse
   where
-    pTrue = JBool True <$ pString "true"
-    pFalse = JBool False <$ pString "false"
+    pTrue = JBool True <$ string "true"
+    pFalse = JBool False <$ string "false"
 
-pJNumber :: Parser JValue
-pJNumber = JNumber . read <$> some (satisfy isDigit)
+jsonNumber :: Parser JValue
+jsonNumber = JNumber . read <$> some (satisfy isDigit)
 
-pQString :: Parser String
-pQString = pChar '"' *>  many (satisfy $ \x -> x /= '"') <* pChar '"'
+quoteString :: Parser String
+quoteString = char '"' *>  many (satisfy $ \x -> x /= '"') <* char '"'
 
-pJString :: Parser JValue
-pJString = JString <$> pQString
+jsonString :: Parser JValue
+jsonString = JString <$> quoteString
 
-pJLiteral :: Parser JValue
-pJLiteral = pJNull <|> pJBool <|> pJNumber <|> pJString
+jsonLiteral :: Parser JValue
+jsonLiteral = jsonNull <|> jsonBool <|> jsonNumber <|> jsonString
 
-pJValue :: Parser JValue
-pJValue = JArray <$> (pChar '[' *> pJLiteral `sepBy` pChar ',' <* pChar ']') <|> pJLiteral
+jsonValue :: Parser JValue
+jsonValue = JArray <$> (char '[' *> jsonLiteral `sepBy` char ',' <* char ']') <|> jsonLiteral
 
 jsonEntry :: Parser (String, JValue)
 jsonEntry = do
-  key   <- pQString
-  _     <- pChar ':'
-  value <- pJValue
+  key   <- quoteString
+  _     <- char ':'
+  value <- jsonValue
   return (key, value)
 
-pJObject :: Parser JValue
-pJObject = JObject <$> (pChar '{' *> many jsonEntry <* pChar '}')
+jsonObject :: Parser JValue
+jsonObject = JObject <$> (char '{' *> many jsonEntry <* char '}')
