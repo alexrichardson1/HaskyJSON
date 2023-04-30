@@ -62,7 +62,7 @@ lexer :: Parser a -> Parser a
 lexer parser = spaces *> parser <* spaces
 
 sepBy :: Parser a -> Parser b -> Parser [a]
-sepBy p sep = (:) <$> p <*> many (sep *> p)
+sepBy p sep = ((:) <$> p <*> many (sep *> p)) <|> pure []
 
 jsonNull :: Parser JValue
 jsonNull = lexer $ JNull <$ string "null"
@@ -86,7 +86,7 @@ jsonPrimitive :: Parser JValue
 jsonPrimitive = lexer $ jsonNull <|> jsonBool <|> jsonNumber <|> jsonString
 
 jsonValue :: Parser JValue
-jsonValue = lexer $ JArray <$> (char '[' *> jsonPrimitive `sepBy` char ',' <* char ']') <|> jsonPrimitive
+jsonValue = lexer $ jsonObject <|> JArray <$> (char '[' *> (jsonObject <|> jsonValue <|> jsonPrimitive) `sepBy` char ',' <* char ']') <|> jsonPrimitive
 
 jsonEntry :: Parser (String, JValue)
 jsonEntry = lexer $ do
