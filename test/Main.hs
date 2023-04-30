@@ -25,6 +25,7 @@ testArray = TestList [TestCase (assertEqual "empty" (Just (JObject [("x", JArray
 
 testObject :: Test
 testObject = TestList [TestCase (assertEqual "empty" (Just (JObject [], "")) (runParser jsonObject "{}")),
+                       TestCase (assertEqual "object" (Just (JObject [("x", JNull), ("y", JNull)], "")) (runParser jsonObject "{\"x\":null,\"y\":null}")),
                        TestCase (assertEqual "nest object" (Just (JObject [("x", JObject [("y", JNull)])], "")) (runParser jsonObject "{\"x\":{\"y\":null}}"))
                       ]
 

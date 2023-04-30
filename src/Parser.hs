@@ -96,4 +96,4 @@ jsonEntry = lexer $ do
   return (key, value)
 
 jsonObject :: Parser JValue
-jsonObject = lexer $ JObject <$> (char '{' *> many jsonEntry <* char '}')
+jsonObject = lexer $ JObject <$> (char '{' *> jsonEntry `sepBy` char ',' <* char '}')
