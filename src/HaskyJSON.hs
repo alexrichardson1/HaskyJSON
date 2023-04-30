@@ -1,7 +1,5 @@
 module HaskyJSON (parseJSON) where
 
-import System.IO  
-import Control.Monad
 import Parser
 
 parseJSON :: FilePath -> IO (Maybe (JValue, String))
