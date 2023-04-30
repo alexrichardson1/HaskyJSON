@@ -2,8 +2,9 @@ module HaskyJSON (parseJSON) where
 
 import System.IO  
 import Control.Monad
+import Parser
 
-parseJSON :: FilePath -> IO ()
+parseJSON :: FilePath -> IO (Maybe (JValue, String))
 parseJSON file = do
     content <- readFile file
-    putStrLn content
+    return $ runParser jsonObject content
