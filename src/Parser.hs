@@ -14,36 +14,36 @@ data JValue = JNull
             deriving (Show, Eq)
 
 instance Functor Parser where
-  fmap f (Parser p) = Parser $ \cs -> do
-      (a, cs') <- p cs
-      Just (f a, cs')
+  fmap f (Parser p) = Parser $ \input -> do
+    (a, rs) <- p input
+    Just (f a, rs)
 
 instance Applicative Parser where
-  pure a = Parser $ \cs -> Just (a, cs)
+  pure a = Parser $ \input -> Just (a, input)
 
-  (<*>) (Parser p) (Parser q) = Parser $ \cs -> do
-      (f, cs') <- p cs
-      (a, cs'') <- q cs'
-      Just (f a, cs'')
+  (<*>) (Parser p) (Parser q) = Parser $ \input -> do
+    (f, rs) <- p input
+    (a, rs') <- q rs
+    Just (f a, rs')
 
 instance Monad Parser where
-  (>>=) (Parser p) f = Parser $ \cs -> do
-    (a, cs') <- p cs
+  (>>=) (Parser p) f = Parser $ \input -> do
+    (a, rs) <- p input
     let (Parser q) = f a
-    (b, cs'') <- q cs'
-    Just (b, cs'')
+    (b, rs') <- q rs
+    Just (b, rs')
 
 instance Alternative Parser where
   empty = Parser $ const Nothing
 
-  (<|>) (Parser p) (Parser q) = Parser $ \cs -> p cs <|> q cs
+  (<|>) (Parser p) (Parser q) = Parser $ \input -> p input <|> q input
 
 char :: Char -> Parser Char
-char x = Parser g
+char x = Parser p
   where
-    g (c: cs)
+    p (c: cs)
       | c == x = Just (c, cs)
-    g _ = Nothing
+    p _ = Nothing
 
 string :: String -> Parser String
 string = traverse char
