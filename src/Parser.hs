@@ -1,4 +1,4 @@
-module Parser (runParser, jsonObject, JValue) where
+module Parser (runParser, jsonObject, JValue(..)) where
 
 import Data.Char (isDigit, isSpace)
 import Control.Applicative
