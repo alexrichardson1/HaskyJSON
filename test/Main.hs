@@ -1,8 +1,8 @@
 module Main (main) where
 
-import Test.HUnit
-import Parser
+import           Parser
 import qualified System.Exit as Exit
+import           Test.HUnit
 
 main :: IO ()
 main = do

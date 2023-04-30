@@ -1,6 +1,6 @@
 module HaskyJSON (parseJSON) where
 
-import Parser
+import           Parser
 
 parseJSON :: FilePath -> IO (Maybe (JValue, String))
 parseJSON file = do
