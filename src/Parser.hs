@@ -1,6 +1,6 @@
 module Parser (runParser, jsonObject) where
 
-import Data.Char (isDigit, digitToInt)
+import Data.Char (isDigit, isSpace)
 import Control.Applicative
 
 newtype Parser a = Parser { runParser :: String -> Maybe (a, String)}
@@ -55,39 +55,45 @@ satisfy f = Parser p
       | f c = Just (c, cs)
     p _ = Nothing
 
+spaces :: Parser String
+spaces = many $ satisfy isSpace
+
+lexer :: Parser a -> Parser a
+lexer parser = spaces *> parser <* spaces
+
 sepBy :: Parser a -> Parser b -> Parser [a]
 sepBy p sep = (:) <$> p <*> many (sep *> p)
 
 jsonNull :: Parser JValue
-jsonNull = JNull <$ string "null"
+jsonNull = lexer $ JNull <$ string "null"
 
 jsonBool :: Parser JValue
-jsonBool = pTrue <|> pFalse
+jsonBool = lexer $ pTrue <|> pFalse
   where
     pTrue = JBool True <$ string "true"
     pFalse = JBool False <$ string "false"
 
 jsonNumber :: Parser JValue
-jsonNumber = JNumber . read <$> some (satisfy isDigit)
+jsonNumber = lexer $ JNumber . read <$> some (satisfy isDigit)
 
 quoteString :: Parser String
-quoteString = char '"' *>  many (satisfy $ \x -> x /= '"') <* char '"'
+quoteString = lexer $ char '"' *>  many (satisfy $ \x -> x /= '"') <* char '"'
 
 jsonString :: Parser JValue
-jsonString = JString <$> quoteString
+jsonString = lexer $ JString <$> quoteString
 
 jsonLiteral :: Parser JValue
-jsonLiteral = jsonNull <|> jsonBool <|> jsonNumber <|> jsonString
+jsonLiteral = lexer $ jsonNull <|> jsonBool <|> jsonNumber <|> jsonString
 
 jsonValue :: Parser JValue
-jsonValue = JArray <$> (char '[' *> jsonLiteral `sepBy` char ',' <* char ']') <|> jsonLiteral
+jsonValue = lexer $ JArray <$> (char '[' *> jsonLiteral `sepBy` char ',' <* char ']') <|> jsonLiteral
 
 jsonEntry :: Parser (String, JValue)
-jsonEntry = do
+jsonEntry = lexer $ do
   key   <- quoteString
   _     <- char ':'
   value <- jsonValue
   return (key, value)
 
 jsonObject :: Parser JValue
-jsonObject = JObject <$> (char '{' *> many jsonEntry <* char '}')
+jsonObject = lexer $ JObject <$> (char '{' *> many jsonEntry <* char '}')
