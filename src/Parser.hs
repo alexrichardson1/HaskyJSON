@@ -82,11 +82,11 @@ quoteString = lexer $ char '"' *>  many (satisfy $ \x -> x /= '"') <* char '"'
 jsonString :: Parser JValue
 jsonString = lexer $ JString <$> quoteString
 
-jsonLiteral :: Parser JValue
-jsonLiteral = lexer $ jsonNull <|> jsonBool <|> jsonNumber <|> jsonString
+jsonPrimitive :: Parser JValue
+jsonPrimitive = lexer $ jsonNull <|> jsonBool <|> jsonNumber <|> jsonString
 
 jsonValue :: Parser JValue
-jsonValue = lexer $ JArray <$> (char '[' *> jsonLiteral `sepBy` char ',' <* char ']') <|> jsonLiteral
+jsonValue = lexer $ JArray <$> (char '[' *> jsonPrimitive `sepBy` char ',' <* char ']') <|> jsonPrimitive
 
 jsonEntry :: Parser (String, JValue)
 jsonEntry = lexer $ do
