@@ -1,8 +1,17 @@
 module Main (main) where
 
 import Parser
+  ( JValue (JArray, JBool, JNull, JNumber, JObject),
+    jsonObject,
+    runParser,
+  )
 import qualified System.Exit as Exit
 import Test.HUnit
+  ( Counts (failures),
+    Test (..),
+    assertEqual,
+    runTestTT,
+  )
 
 main :: IO ()
 main = do

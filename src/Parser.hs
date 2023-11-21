@@ -1,6 +1,6 @@
 module Parser (runParser, jsonObject, JValue (..)) where
 
-import Control.Applicative
+import Control.Applicative (Alternative (..))
 import Data.Char (isDigit, isSpace)
 
 newtype Parser a = Parser {runParser :: String -> Maybe (a, String)}
