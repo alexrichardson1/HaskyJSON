@@ -1,3 +1,5 @@
+{-# LANGUAGE InstanceSigs #-}
+
 module Parser (runParser, jsonObject, JValue (..)) where
 
 import Control.Applicative (Alternative (..))
@@ -15,19 +17,23 @@ data JValue
   deriving (Show, Eq)
 
 instance Functor Parser where
+  fmap :: (a -> b) -> Parser a -> Parser b
   fmap f (Parser p) = Parser $ \input -> do
     (a, rs) <- p input
     Just (f a, rs)
 
 instance Applicative Parser where
+  pure :: a -> Parser a
   pure a = Parser $ \input -> Just (a, input)
 
+  (<*>) :: Parser (a -> b) -> Parser a -> Parser b
   (<*>) (Parser p) (Parser q) = Parser $ \input -> do
     (f, rs) <- p input
     (a, rs') <- q rs
     Just (f a, rs')
 
 instance Monad Parser where
+  (>>=) :: Parser a -> (a -> Parser b) -> Parser b
   (>>=) (Parser p) f = Parser $ \input -> do
     (a, rs) <- p input
     let (Parser q) = f a
@@ -35,8 +41,10 @@ instance Monad Parser where
     Just (b, rs')
 
 instance Alternative Parser where
+  empty :: Parser a
   empty = Parser $ const Nothing
 
+  (<|>) :: Parser a -> Parser a -> Parser a
   (<|>) (Parser p) (Parser q) = Parser $ \input -> p input <|> q input
 
 char :: Char -> Parser Char
