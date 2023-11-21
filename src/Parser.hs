@@ -1,17 +1,18 @@
-module Parser (runParser, jsonObject, JValue(..)) where
+module Parser (runParser, jsonObject, JValue (..)) where
 
-import           Control.Applicative
-import           Data.Char           (isDigit, isSpace)
+import Control.Applicative
+import Data.Char (isDigit, isSpace)
 
-newtype Parser a = Parser { runParser :: String -> Maybe (a, String)}
+newtype Parser a = Parser {runParser :: String -> Maybe (a, String)}
 
-data JValue = JNull
-            | JBool   Bool
-            | JNumber Int
-            | JString String
-            | JArray  [JValue]
-            | JObject [(String, JValue)]
-            deriving (Show, Eq)
+data JValue
+  = JNull
+  | JBool Bool
+  | JNumber Int
+  | JString String
+  | JArray [JValue]
+  | JObject [(String, JValue)]
+  deriving (Show, Eq)
 
 instance Functor Parser where
   fmap f (Parser p) = Parser $ \input -> do
@@ -22,7 +23,7 @@ instance Applicative Parser where
   pure a = Parser $ \input -> Just (a, input)
 
   (<*>) (Parser p) (Parser q) = Parser $ \input -> do
-    (f, rs)  <- p input
+    (f, rs) <- p input
     (a, rs') <- q rs
     Just (f a, rs')
 
@@ -41,9 +42,9 @@ instance Alternative Parser where
 char :: Char -> Parser Char
 char x = Parser p
   where
-    p (c: cs)
+    p (c : cs)
       | c == x = Just (c, cs)
-    p _        = Nothing
+    p _ = Nothing
 
 string :: String -> Parser String
 string = traverse char
@@ -53,7 +54,7 @@ satisfy f = Parser p
   where
     p (c : cs)
       | f c = Just (c, cs)
-    p _     = Nothing
+    p _ = Nothing
 
 spaces :: Parser String
 spaces = many $ satisfy isSpace
@@ -70,14 +71,14 @@ jsonNull = lexer $ JNull <$ string "null"
 jsonBool :: Parser JValue
 jsonBool = lexer $ pTrue <|> pFalse
   where
-    pTrue  = JBool True <$ string "true"
+    pTrue = JBool True <$ string "true"
     pFalse = JBool False <$ string "false"
 
 jsonNumber :: Parser JValue
 jsonNumber = lexer $ JNumber . read <$> some (satisfy isDigit)
 
 quoteString :: Parser String
-quoteString = lexer $ char '"' *>  many (satisfy $ \x -> x /= '"') <* char '"'
+quoteString = lexer $ char '"' *> many (satisfy $ \x -> x /= '"') <* char '"'
 
 jsonString :: Parser JValue
 jsonString = lexer $ JString <$> quoteString
@@ -90,8 +91,8 @@ jsonValue = lexer $ jsonObject <|> JArray <$> (char '[' *> (jsonObject <|> jsonV
 
 jsonEntry :: Parser (String, JValue)
 jsonEntry = lexer $ do
-  key   <- quoteString
-  _     <- char ':'
+  key <- quoteString
+  _ <- char ':'
   value <- jsonValue
   return (key, value)
 
