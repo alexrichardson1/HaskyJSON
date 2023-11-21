@@ -13,7 +13,7 @@ library
     import:           warnings
     exposed-modules:  HaskyJSON
     other-modules:    Parser
-    build-depends:    base ^>=4.17.0.0
+    build-depends:    base ^>=4.13.0.0
     hs-source-dirs:   src
     default-language: Haskell2010
 
@@ -21,10 +21,9 @@ test-suite hasky-json-test
     import:           warnings
     default-language: Haskell2010
     other-modules:    Parser
-    type:             exitcode-stdio-1.0
     hs-source-dirs:   test, src
     main-is:          Main.hs
     type:             exitcode-stdio-1.0
     build-depends:
-        base ^>=4.17.0.0,
+        base ^>=4.13.0.0,
         HUnit >=1.6.2.0
